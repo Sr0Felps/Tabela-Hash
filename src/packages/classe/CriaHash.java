@@ -1,7 +1,7 @@
-package main.java.com.aula.classe;
+package packages.classe;
 
-import com.aula.hash.*;
-import com.aula.model.Pessoa;
+import packages.hash.*;
+import packages.model.Pessoa;
 
 import java.util.Objects;
 
@@ -9,6 +9,7 @@ public class CriaHash<T> {
     private static final double MAX_LOAD = 0.70;
     private HashTableEntry<T>[] table;
     private int size = 0;
+    private int collisions = 0;
 
     private final IntKeyExtractor<T> keyExtractor;
     private final HashFunction hashFunction;
@@ -44,19 +45,28 @@ public class CriaHash<T> {
         return buscarSemColisao(keyExtractor.getKey(value));
     }
 
-    public void inserirSemColisao(T info) {
+    public boolean inserirSemColisao(T info) {
         int id = keyExtractor.getKey(info);
         ensureCapacity();
         int index = baseIndex(id);
-        // Meramente Didático
+
+        // NOVO: Verifica colisão (slot ocupado por uma CHAVE DIFERENTE)
+        if(table[index].state == State.OCCUPIED && table[index].key != id){
+            // Colisão detectada, a inserção 'falha'
+            return false;
+        }
+
+        // Lógica original levemente ajustada
         if(table[index].state != State.OCCUPIED){
             size++;
         } else {
             System.out.println("ID existente: Substituindo Valor");
         }
+
         table[index].key = id;
         table[index].value = info;
         table[index].state = State.OCCUPIED;
+        return true; // Inserção bem-sucedida ou substituição
     }
 
     public T buscarEnderecoAberto(int id) {
@@ -68,7 +78,7 @@ public class CriaHash<T> {
         return buscarEnderecoAberto(keyExtractor.getKey(value));
     }
 
-    public void inserirEnderecoAberto(T info) {
+    public int inserirEnderecoAberto(T info) {
         int id = keyExtractor.getKey(info);
         ensureCapacity();
         int index = findSlotForInsert(id);
@@ -84,6 +94,8 @@ public class CriaHash<T> {
         table[index].key = id;
         table[index].value = info;
         table[index].state = State.OCCUPIED;
+
+        return index; // <--- NOVO: Retorna o índice de inserção
     }
 
     public T removeEnderecoAberto(int id){
@@ -153,9 +165,15 @@ public class CriaHash<T> {
         for(int i=0;i<cap;i++){
             int index = sondagemLinear(h, i, cap);
             State state = table[index].state;
-            if(state == State.EMPTY){
+
+            // NOVO: Lógica de contagem de colisões (i > 0 significa que uma sondagem ocorreu)
+            if (i > 0 && state != State.EMPTY) {
+                collisions++;
+            }
+
+            if(state == State.EMPTY)
                 return (firstDeleted >=0) ? firstDeleted : index;
-            } else if (state == State.DELETED) {
+            else if (state == State.DELETED) {
                 if(firstDeleted < 0) firstDeleted = index;
             } else {
                 if(table[index].key == id) return index;
@@ -197,5 +215,19 @@ public class CriaHash<T> {
         }
     }
 
+    public int getCollisions() {
+        return collisions;
+    }
 
+    public String tableContent() {
+        StringBuilder sb = new StringBuilder("Hash Table Content:\n");
+        for (int i = 0; i < capacity(); i++) {
+            HashTableEntry<T> entry = table[i];
+            String key = (entry.state == State.OCCUPIED || entry.state == State.DELETED) ? String.valueOf(entry.key) : "N/A";
+            String value = (entry.value != null) ? entry.value.toString().replace("\n", "\n\t") : "N/A";
+            sb.append(String.format("[%d]: State=%s, Key=%s, Value=%s\n",
+                    i, entry.state, key, value));
+        }
+        return sb.toString();
+    }
 }

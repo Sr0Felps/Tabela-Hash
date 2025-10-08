@@ -1,4 +1,4 @@
-package main.java.com.aula.hash;
+package packages.hash;
 
 public class ModHashFunction  implements HashFunction{
 

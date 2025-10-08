@@ -1,4 +1,4 @@
-package main.java.com.aula.model;
+package packages.model;
 
 
 public class Pessoa {

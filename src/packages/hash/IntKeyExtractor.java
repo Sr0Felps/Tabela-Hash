@@ -1,4 +1,4 @@
-package main.java.com.aula.hash;
+package packages.hash;
 
 @FunctionalInterface
 public interface IntKeyExtractor<T> {

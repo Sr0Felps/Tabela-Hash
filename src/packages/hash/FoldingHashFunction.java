@@ -1,4 +1,4 @@
-package main.java.com.aula.hash;
+package packages.hash;
 
 public class FoldingHashFunction implements HashFunction{
     private final int groupSize;

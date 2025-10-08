@@ -1,4 +1,4 @@
-package main.java.com.aula.hash;
+package packages.hash;
 
 public class MultiplicativeHashFunction implements HashFunction{
     private static final double A = 0.6180339887;
